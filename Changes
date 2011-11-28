@@ -1,6 +1,7 @@
-Revision history for Dist::Zilla::Plugin::Git
+Revision history for Dist-Zilla-Plugin-VCI
 
 {{$NEXT}}
+ - forked from Dist-Zilla-Plugin-Git
 
 1.113220  2011-11-18 09:12:51 Europe/Paris
  - fix gh#19 - allow to specify alternate repository root (mike friedman)

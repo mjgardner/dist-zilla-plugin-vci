@@ -1,9 +1,9 @@
 # avoid version control files.
-.git
+/.git
 
 # avoid dist::zilla generated and utility files
-.build
-_build
+/.build
+/_build
 tmp
 
 # avoid temp and backup files.
@@ -17,4 +17,4 @@ tmp
 
 # avoid archives of this distribution
 Dist-Zilla-Plugin-Git-*
-
+/Dist-Zilla-Plugin-VCI-*
