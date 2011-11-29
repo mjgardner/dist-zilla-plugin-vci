@@ -4,6 +4,7 @@ use warnings;
 
 package Dist::Zilla::Plugin::Git::Commit;
 # ABSTRACT: commit dirty files
+# VERSION
 
 use File::Temp           qw{ tempfile };
 use Git::Wrapper;

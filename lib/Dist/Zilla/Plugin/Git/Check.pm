@@ -4,6 +4,7 @@ use warnings;
 
 package Dist::Zilla::Plugin::Git::Check;
 # ABSTRACT: check your git repository before releasing
+# VERSION
 
 use Git::Wrapper;
 use Moose;

@@ -1,0 +1,31 @@
+=pod
+
+=head1 NAME
+
+Dist::Zilla::Plugin::VCI - Update your VCI-supported repository after release
+
+=head1 VERSION
+
+version 1.113221
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Mark Gardner
+
+=item *
+
+Jerome Quelin
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011 by GSI Commerce.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+

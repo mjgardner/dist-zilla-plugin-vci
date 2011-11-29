@@ -4,6 +4,7 @@ use warnings;
 
 package Dist::Zilla::Plugin::Git::Push;
 # ABSTRACT: push current branch
+# VERSION
 
 use Git::Wrapper;
 use Moose;

@@ -1,4 +1,5 @@
 package Dist::Zilla::Plugin::VCI;
+# VERSION
 
 1;
 

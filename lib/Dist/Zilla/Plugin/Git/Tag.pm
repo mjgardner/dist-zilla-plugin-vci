@@ -4,6 +4,7 @@ use warnings;
 
 package Dist::Zilla::Plugin::Git::Tag;
 # ABSTRACT: tag the new version
+# VERSION
 
 use Git::Wrapper;
 use Moose;

@@ -4,6 +4,7 @@ use warnings;
 
 package Dist::Zilla::Plugin::Git::CommitBuild;
 # ABSTRACT: checkin build results on separate branch
+# VERSION
 
 use Git::Wrapper;
 use IPC::Open3;

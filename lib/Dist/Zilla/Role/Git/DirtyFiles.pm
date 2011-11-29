@@ -4,6 +4,7 @@ use warnings;
 
 package Dist::Zilla::Role::Git::DirtyFiles;
 # ABSTRACT: provide the allow_dirty & changelog attributes
+# VERSION
 
 use Moose::Role;
 use Moose::Autobox;

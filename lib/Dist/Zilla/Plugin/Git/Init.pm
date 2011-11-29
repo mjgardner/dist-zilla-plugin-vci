@@ -4,6 +4,7 @@ use warnings;
 
 package Dist::Zilla::Plugin::Git::Init;
 # ABSTRACT: initialize git repository on dzil new
+# VERSION
 
 our %transform = (
   lc => sub { lc shift },

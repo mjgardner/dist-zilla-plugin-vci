@@ -3,6 +3,7 @@ use warnings;
 
 package Dist::Zilla::Plugin::Git::NextVersion;
 # ABSTRACT: provide a version number by bumping the last git release tag
+# VERSION
 
 use Dist::Zilla 4 ();
 use Git::Wrapper;

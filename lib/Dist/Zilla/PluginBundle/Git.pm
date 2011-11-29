@@ -4,6 +4,7 @@ use warnings;
 
 package Dist::Zilla::PluginBundle::Git;
 # ABSTRACT: all git plugins in one go
+# VERSION
 
 use Moose;
 use Class::MOP;
