@@ -1,22 +1,15 @@
-use utf8;
-use Modern::Perl;
-
 package Dist::Zilla::Role::Git::Repo;
+use Modern::Perl;
+use utf8;
 
-# ABSTRACT: Provide repository information for Git plugins
 # VERSION
-
 use Moose::Role;
 
-has 'repo_root'   => ( is => 'ro', isa => 'Str', default => '.' );
-
+has 'repo_root' => ( is => 'ro', isa => 'Str', default => '.' );
 
 1;
 
-
-__END__
-
-=pod
+# ABSTRACT: Provide repository information for Git plugins
 
 =head1 DESCRIPTION
 

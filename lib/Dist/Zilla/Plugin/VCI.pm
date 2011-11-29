@@ -1,9 +1,8 @@
-use utf8;
-use Modern::Perl;
-
 package Dist::Zilla::Plugin::VCI;
-# VERSION
+use Modern::Perl;
+use utf8;
 
+# VERSION
 1;
 
 # ABSTRACT: Update your VCI-supported repository after release

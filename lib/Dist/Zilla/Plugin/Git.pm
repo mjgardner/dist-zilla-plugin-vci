@@ -1,17 +1,13 @@
-use 5.008;
-use strict;
-use warnings;
-use utf8;
-use Modern::Perl;
-
 package Dist::Zilla::Plugin::Git;
-# ABSTRACT: update your git repository after release
-# VERSION
+use strict;
+use Modern::Perl;
+use utf8;
 
+# VERSION
 use Dist::Zilla 2.100880;    # Need mvp_multivalue_args in Plugin role
 1;
-__END__
 
+# ABSTRACT: update your git repository after release
 
 =head1 DESCRIPTION
 
@@ -73,4 +69,3 @@ L<http://annocpan.org/dist/Dist-Zilla-Plugin-Git>
 L<http://cpanratings.perl.org/d/Dist-Zilla-Plugin-Git>
 
 =back
-

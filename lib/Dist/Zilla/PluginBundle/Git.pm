@@ -1,41 +1,38 @@
-use 5.008;
-use strict;
-use warnings;
-use utf8;
-use Modern::Perl;
-
 package Dist::Zilla::PluginBundle::Git;
-# ABSTRACT: all git plugins in one go
-# VERSION
+use strict;
+use Modern::Perl;
+use utf8;
 
+# VERSION
 use Moose;
 use Class::MOP;
 
 with 'Dist::Zilla::Role::PluginBundle';
 
 # bundle all git plugins
-my @names   = qw{ Check Commit Tag Push };
+my @names = qw{ Check Commit Tag Push };
 
 my %multi;
 for my $name (@names) {
     my $class = "Dist::Zilla::Plugin::Git::$name";
     Class::MOP::load_class($class);
-    @multi{$class->mvp_multivalue_args} = ();
+    @multi{ $class->mvp_multivalue_args } = ();
 }
 
 sub mvp_multivalue_args { keys %multi; }
 
 sub bundle_config {
-    my ($self, $section) = @_;
+    my ( $self, $section ) = @_;
+
     #my $class = ( ref $self ) || $self;
-    my $arg   = $section->{payload};
+    my $arg = $section->{payload};
 
     my @config;
 
     for my $name (@names) {
         my $class = "Dist::Zilla::Plugin::Git::$name";
         my %payload;
-        foreach my $k (keys %$arg) {
+        foreach my $k ( keys %$arg ) {
             $payload{$k} = $arg->{$k} if $class->can($k);
         }
         push @config, [ "$section->{name}/$name" => $class => \%payload ];
@@ -44,11 +41,11 @@ sub bundle_config {
     return @config;
 }
 
-
 __PACKAGE__->meta->make_immutable;
 no Moose;
 1;
-__END__
+
+# ABSTRACT: all git plugins in one go
 
 =for Pod::Coverage
     bundle_config

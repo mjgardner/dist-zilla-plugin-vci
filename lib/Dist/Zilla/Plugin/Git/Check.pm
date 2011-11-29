@@ -1,20 +1,15 @@
-use 5.008;
-use strict;
-use warnings;
-use utf8;
-use Modern::Perl;
-
 package Dist::Zilla::Plugin::Git::Check;
-# ABSTRACT: check your git repository before releasing
-# VERSION
+use strict;
+use Modern::Perl;
+use utf8;
 
+# VERSION
 use Git::Wrapper;
 use Moose;
 
 with 'Dist::Zilla::Role::BeforeRelease';
 with 'Dist::Zilla::Role::Git::DirtyFiles';
 with 'Dist::Zilla::Role::Git::Repo';
-
 
 # -- public methods
 
@@ -25,44 +20,40 @@ sub before_release {
     my @output;
 
     # fetch current branch
-    my ($branch) =
-        map { /^\*\s+(.+)/ ? $1 : () }
-        $git->branch;
+    my ($branch) = map { /^\*\s+(.+)/ ? $1 : () } $git->branch;
 
     # check if some changes are staged for commit
-    @output = $git->diff( { cached=>1, 'name-status'=>1 } );
-    if ( @output ) {
-        my $errmsg =
-            "branch $branch has some changes staged for commit:\n" .
-            join "\n", map { "\t$_" } @output;
+    @output = $git->diff( { cached => 1, 'name-status' => 1 } );
+    if (@output) {
+        my $errmsg = "branch $branch has some changes staged for commit:\n"
+            . join "\n", map {"\t$_"} @output;
         $self->log_fatal($errmsg);
     }
 
     # everything but files listed in allow_dirty should be in a
     # clean state
     @output = $self->list_dirty_files($git);
-    if ( @output ) {
-        my $errmsg =
-            "branch $branch has some uncommitted files:\n" .
-            join "\n", map { "\t$_" } @output;
+    if (@output) {
+        my $errmsg
+            = "branch $branch has some uncommitted files:\n" . join "\n",
+            map {"\t$_"} @output;
         $self->log_fatal($errmsg);
     }
 
     # no files should be untracked
-    @output = $git->ls_files( { others=>1, 'exclude-standard'=>1 } );
-    if ( @output ) {
-        my $errmsg =
-            "branch $branch has some untracked files:\n" .
-            join "\n", map { "\t$_" } @output;
+    @output = $git->ls_files( { others => 1, 'exclude-standard' => 1 } );
+    if (@output) {
+        my $errmsg = "branch $branch has some untracked files:\n" . join "\n",
+            map {"\t$_"} @output;
         $self->log_fatal($errmsg);
     }
 
-    $self->log( "branch $branch is in a clean state" );
+    $self->log("branch $branch is in a clean state");
 }
 
-
 1;
-__END__
+
+# ABSTRACT: check your git repository before releasing
 
 =for Pod::Coverage
     before_release

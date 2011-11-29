@@ -1,14 +1,10 @@
-use 5.008;
-use strict;
-use warnings;
-use utf8;
-use Modern::Perl;
-
 package Dist::Zilla::Plugin::Git::Commit;
-# ABSTRACT: commit dirty files
-# VERSION
+use strict;
+use Modern::Perl;
+use utf8;
 
-use File::Temp           qw{ tempfile };
+# VERSION
+use File::Temp qw{ tempfile };
 use Git::Wrapper;
 use Moose;
 use MooseX::Has::Sugar;
@@ -17,18 +13,23 @@ use Path::Class::Dir ();
 use Cwd;
 
 use String::Formatter method_stringf => {
-  -as => '_format_string',
-  codes => {
-    c => sub { $_[0]->_get_changes },
-    d => sub { require DateTime;
-               DateTime->now(time_zone => $_[0]->time_zone)
-                       ->format_cldr($_[1] || 'dd-MMM-yyyy') },
-    n => sub { "\n" },
-    N => sub { $_[0]->zilla->name },
-    t => sub { $_[0]->zilla->is_trial
-                   ? (defined $_[1] ? $_[1] : '-TRIAL') : '' },
-    v => sub { $_[0]->zilla->version },
-  },
+    -as   => '_format_string',
+    codes => {
+        c => sub { $_[0]->_get_changes },
+        d => sub {
+            require DateTime;
+            DateTime->now( time_zone => $_[0]->time_zone )
+                ->format_cldr( $_[1] || 'dd-MMM-yyyy' );
+        },
+        n => sub {"\n"},
+        N => sub { $_[0]->zilla->name },
+        t => sub {
+            $_[0]->zilla->is_trial
+                ? ( defined $_[1] ? $_[1] : '-TRIAL' )
+                : '';
+        },
+        v => sub { $_[0]->zilla->version },
+    },
 };
 
 with 'Dist::Zilla::Role::AfterRelease';
@@ -37,32 +38,33 @@ with 'Dist::Zilla::Role::Git::Repo';
 
 # -- attributes
 
-has commit_msg => ( ro, isa=>Str, default => 'v%v%n%n%c' );
-has time_zone  => ( ro, isa=>Str, default => 'local' );
-has add_files_in  => ( ro, isa=>'ArrayRef[Str]', default => sub { [] } );
+has commit_msg => ( ro, isa => Str, default => 'v%v%n%n%c' );
+has time_zone  => ( ro, isa => Str, default => 'local' );
+has add_files_in => ( ro, isa => 'ArrayRef[Str]', default => sub { [] } );
 
 # -- public methods
 
-sub mvp_multivalue_args { qw( add_files_in ) }
+sub mvp_multivalue_args {qw( add_files_in )}
 
 sub after_release {
     my $self = shift;
 
-    my $git  = Git::Wrapper->new( $self->repo_root );
+    my $git = Git::Wrapper->new( $self->repo_root );
     my @output;
 
     # check if there are dirty files that need to be committed.
     # at this time, we know that only those 2 files may remain modified,
     # otherwise before_release would have failed, ending the release
     # process.
-    @output = sort { lc $a cmp lc $b } $self->list_dirty_files($git, 1);
+    @output = sort { lc $a cmp lc $b } $self->list_dirty_files( $git, 1 );
 
     # add any other untracked files to the commit list
     if ( @{ $self->add_files_in } ) {
-        my @untracked_files = $git->ls_files( { others=>1, 'exclude-standard'=>1 } );
-        foreach my $f ( @untracked_files ) {
+        my @untracked_files
+            = $git->ls_files( { others => 1, 'exclude-standard' => 1 } );
+        foreach my $f (@untracked_files) {
             foreach my $path ( @{ $self->add_files_in } ) {
-                if ( Path::Class::Dir->new( $path )->subsumes( $f ) ) {
+                if ( Path::Class::Dir->new($path)->subsumes($f) ) {
                     push( @output, $f );
                     last;
                 }
@@ -71,32 +73,24 @@ sub after_release {
     }
 
     # if nothing to commit, we're done!
-    return unless @output;    
+    return unless @output;
 
     # write commit message in a temp file
-    my ($fh, $filename) = tempfile( getcwd . '/DZP-git.XXXX', UNLINK => 0 );
+    my ( $fh, $filename ) = tempfile( getcwd . '/DZP-git.XXXX', UNLINK => 0 );
     print $fh $self->get_commit_message;
     close $fh;
 
     # commit the files in git
-    $git->add( @output );
-    $self->log_debug($_) for $git->commit( { file=>$filename } );
+    $git->add(@output);
+    $self->log_debug($_) for $git->commit( { file => $filename } );
     $self->log("Committed @output");
 }
-
-
-=method get_commit_message
-
-This method returns the commit message.  The default implementation
-reads the Changes file to get the list of changes in the just-released version.
-
-=cut
 
 sub get_commit_message {
     my $self = shift;
 
-    return _format_string($self->commit_msg, $self);
-} # end get_commit_message
+    return _format_string( $self->commit_msg, $self );
+}    # end get_commit_message
 
 # -- private methods
 
@@ -104,22 +98,23 @@ sub _get_changes {
     my $self = shift;
 
     # parse changelog to find commit message
-    my $changelog = Dist::Zilla::File::OnDisk->new( { name => $self->changelog } );
-    my $newver    = $self->zilla->version;
-    my @content   =
-        grep { /^$newver(?:\s+|$)/ ... /^\S/ } # from newver to un-indented
+    my $changelog
+        = Dist::Zilla::File::OnDisk->new( { name => $self->changelog } );
+    my $newver = $self->zilla->version;
+    my @content
+        = grep { /^$newver(?:\s+|$)/ ... /^\S/ }  # from newver to un-indented
         split /\n/, $changelog->content;
-    shift @content; # drop the version line
-    # drop unindented last line and trailing blank lines
+    shift @content;    # drop the version line
+                       # drop unindented last line and trailing blank lines
     pop @content while ( @content && $content[-1] =~ /^(?:\S|\s*$)/ );
 
     # return commit message
-    return join("\n", @content, ''); # add a final \n
-} # end _get_changes
-
+    return join( "\n", @content, '' );    # add a final \n
+}    # end _get_changes
 
 1;
-__END__
+
+# ABSTRACT: commit dirty files
 
 =for Pod::Coverage
     after_release mvp_multivalue_args
@@ -198,3 +193,8 @@ release, or the empty string if not.  A bare C<%t> means C<%{-TRIAL}t>.
 the distribution version
 
 =back
+
+=method get_commit_message
+
+This method returns the commit message.  The default implementation
+reads the Changes file to get the list of changes in the just-released version.

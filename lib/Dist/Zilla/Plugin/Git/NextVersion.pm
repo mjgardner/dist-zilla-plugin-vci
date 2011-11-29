@@ -1,12 +1,9 @@
-use strict;
-use warnings;
-use utf8;
-use Modern::Perl;
-
 package Dist::Zilla::Plugin::Git::NextVersion;
-# ABSTRACT: provide a version number by bumping the last git release tag
-# VERSION
+use strict;
+use Modern::Perl;
+use utf8;
 
+# VERSION
 use Dist::Zilla 4 ();
 use Git::Wrapper;
 use Version::Next ();
@@ -20,45 +17,47 @@ with 'Dist::Zilla::Role::Git::Repo';
 
 # -- attributes
 
-has version_regexp  => ( is => 'ro', isa=>'Str', default => '^v(.+)$' );
+has version_regexp => ( is => 'ro', isa => 'Str', default => '^v(.+)$' );
 
-has first_version  => ( is => 'ro', isa=>'Str', default => '0.001' );
+has first_version => ( is => 'ro', isa => 'Str', default => '0.001' );
 
 # -- role implementation
 
 sub provide_version {
-  my ($self) = @_;
+    my ($self) = @_;
 
-  # override (or maybe needed to initialize)
-  return $ENV{V} if exists $ENV{V};
+    # override (or maybe needed to initialize)
+    return $ENV{V} if exists $ENV{V};
 
-  local $/ = "\n"; # Force record separator to be single newline
+    local $/ = "\n";    # Force record separator to be single newline
 
-  my $git  = Git::Wrapper->new( $self->repo_root );
-  my $regexp = $self->version_regexp;
+    my $git    = Git::Wrapper->new( $self->repo_root );
+    my $regexp = $self->version_regexp;
 
-  my @tags = $git->tag;
-  @tags = map { /$regexp/ ? $1 : () } @tags;
-  return $self->first_version unless @tags;
+    my @tags = $git->tag;
+    @tags = map { /$regexp/ ? $1 : () } @tags;
+    return $self->first_version unless @tags;
 
-  # find highest version from tags
-  my ($last_ver) =  sort { version->parse($b) <=> version->parse($a) }
-  grep { eval { version->parse($_) }  } @tags;
+    # find highest version from tags
+    my ($last_ver) = sort { version->parse($b) <=> version->parse($a) }
+        grep {
+        eval { version->parse($_) }
+        } @tags;
 
-  $self->log_fatal("Could not determine last version from tags")
-  unless defined $last_ver;
+    $self->log_fatal("Could not determine last version from tags")
+        unless defined $last_ver;
 
-  my $new_ver = Version::Next::next_version($last_ver);
-  $self->log("Bumping version from $last_ver to $new_ver");
+    my $new_ver = Version::Next::next_version($last_ver);
+    $self->log("Bumping version from $last_ver to $new_ver");
 
-  $self->zilla->version("$new_ver");
+    $self->zilla->version("$new_ver");
 }
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
 1;
 
-__END__
+# ABSTRACT: provide a version number by bumping the last git release tag
 
 =for Pod::Coverage
     provide_version

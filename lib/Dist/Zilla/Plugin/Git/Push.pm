@@ -1,13 +1,9 @@
-use 5.008;
-use strict;
-use warnings;
-use utf8;
-use Modern::Perl;
-
 package Dist::Zilla::Plugin::Git::Push;
-# ABSTRACT: push current branch
-# VERSION
+use strict;
+use Modern::Perl;
+use utf8;
 
+# VERSION
 use Git::Wrapper;
 use Moose;
 use MooseX::Has::Sugar;
@@ -16,33 +12,33 @@ use MooseX::Types::Moose qw{ ArrayRef Str };
 with 'Dist::Zilla::Role::AfterRelease';
 with 'Dist::Zilla::Role::Git::Repo';
 
-sub mvp_multivalue_args { qw(push_to) }
+sub mvp_multivalue_args {qw(push_to)}
 
 # -- attributes
 
 has push_to => (
-  is   => 'ro',
-  isa  => 'ArrayRef[Str]',
-  lazy => 1,
-  default => sub { [ qw(origin) ] },
+    is      => 'ro',
+    isa     => 'ArrayRef[Str]',
+    lazy    => 1,
+    default => sub { [qw(origin)] },
 );
-
 
 sub after_release {
     my $self = shift;
     my $git  = Git::Wrapper->new( $self->repo_root );
 
     # push everything on remote branch
-    for my $remote ( @{ $self->push_to } ) { 
-      $self->log("pushing to $remote");
-      my @remote = split(/\s+/,$remote);
-      $self->log_debug($_) for $git->push( @remote );
-      $self->log_debug($_) for $git->push( { tags=>1 },  $remote[0] );
+    for my $remote ( @{ $self->push_to } ) {
+        $self->log("pushing to $remote");
+        my @remote = split( /\s+/, $remote );
+        $self->log_debug($_) for $git->push(@remote);
+        $self->log_debug($_) for $git->push( { tags => 1 }, $remote[0] );
     }
 }
 
 1;
-__END__
+
+# ABSTRACT: push current branch
 
 =for Pod::Coverage
     after_release

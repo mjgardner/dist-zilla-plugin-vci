@@ -1,13 +1,9 @@
-use 5.008;
-use strict;
-use warnings;
-use utf8;
-use Modern::Perl;
-
 package Dist::Zilla::Plugin::Git::CommitBuild;
-# ABSTRACT: checkin build results on separate branch
-# VERSION
+use strict;
+use Modern::Perl;
+use utf8;
 
+# VERSION
 use Git::Wrapper;
 use IPC::Open3;
 use File::chdir;
@@ -18,22 +14,22 @@ use MooseX::Has::Sugar;
 use MooseX::Types::Moose qw{ Str };
 use Cwd qw(abs_path);
 use String::Formatter (
-	method_stringf => {
-		-as   => '_format_branch',
-		codes => {
-			b => sub { (shift->name_rev( '--name-only', 'HEAD' ))[0] },
-		},
-	},
-	method_stringf => {
-		-as   => '_format_message',
-		codes => {
-			b => sub { (shift->_git->name_rev( '--name-only', 'HEAD' ))[0] },
-			h => sub { (shift->_git->rev_parse( '--short',    'HEAD' ))[0] },
-			H => sub { (shift->_git->rev_parse('HEAD'))[0] },
-		    t => sub { shift->zilla->is_trial ? '-TRIAL' : '' },
-		    v => sub { shift->zilla->version },
-		}
-	}
+    method_stringf => {
+        -as => '_format_branch',
+        codes =>
+            { b => sub { ( shift->name_rev( '--name-only', 'HEAD' ) )[0] }, },
+    },
+    method_stringf => {
+        -as   => '_format_message',
+        codes => {
+            b =>
+                sub { ( shift->_git->name_rev( '--name-only', 'HEAD' ) )[0] },
+            h => sub { ( shift->_git->rev_parse( '--short', 'HEAD' ) )[0] },
+            H => sub { ( shift->_git->rev_parse('HEAD') )[0] },
+            t => sub { shift->zilla->is_trial ? '-TRIAL' : '' },
+            v => sub { shift->zilla->version },
+        }
+    }
 );
 
 with 'Dist::Zilla::Role::AfterBuild', 'Dist::Zilla::Role::AfterRelease';
@@ -41,12 +37,17 @@ with 'Dist::Zilla::Role::Git::Repo';
 
 # -- attributes
 
-has branch  => ( ro, isa => Str, default => 'build/%b', required => 1 );
-has release_branch  => ( ro, isa => Str, required => 0 );
-has message => ( ro, isa => Str, default => 'Build results of %h (on %b)', required => 1 );
-has release_message => ( ro, isa => Str, lazy => 1, builder => '_build_release_message' );
-has build_root => ( rw );
-has _git => (rw, weak_ref => 1);
+has branch => ( ro, isa => Str, default => 'build/%b', required => 1 );
+has release_branch => ( ro, isa => Str, required => 0 );
+has message => ( ro,
+    isa      => Str,
+    default  => 'Build results of %h (on %b)',
+    required => 1
+);
+has release_message =>
+    ( ro, isa => Str, lazy => 1, builder => '_build_release_message' );
+has build_root => (rw);
+has _git => ( rw, weak_ref => 1 );
 
 # -- attribute builders
 
@@ -55,7 +56,7 @@ sub _build_release_message { return shift->message; }
 # -- role implementation
 
 sub after_build {
-    my ( $self, $args) = @_;
+    my ( $self, $args ) = @_;
 
     # because the build_root mysteriously change at
     # the 'after_release' stage
@@ -65,9 +66,10 @@ sub after_build {
 }
 
 sub after_release {
-    my ( $self, $args) = @_;
+    my ( $self, $args ) = @_;
 
-    $self->_commit_build( $args, $self->release_branch, $self->release_message );
+    $self->_commit_build( $args, $self->release_branch,
+        $self->release_message );
 }
 
 sub _commit_build {
@@ -75,13 +77,14 @@ sub _commit_build {
 
     return unless $branch;
 
-    my $tmp_dir = File::Temp->newdir( CLEANUP => 1) ;
-    my $src     = Git::Wrapper->new( $self->repo_root );
+    my $tmp_dir = File::Temp->newdir( CLEANUP => 1 );
+    my $src = Git::Wrapper->new( $self->repo_root );
     $self->_git($src);
 
     my $dir = rel2abs( $self->build_root );
 
     my $tree = do {
+
         # don't overwrite the user's index
         local $ENV{GIT_INDEX_FILE} = catfile( $tmp_dir, "temp_git_index" );
         local $ENV{GIT_DIR}        = catfile( $CWD,     '.git' );
@@ -91,37 +94,38 @@ sub _commit_build {
 
         my $write_tree_repo = Git::Wrapper->new( $self->repo_root );
 
-        $write_tree_repo->add({ v => 1, force => 1}, '.' );
-        ($write_tree_repo->write_tree)[0];
+        $write_tree_repo->add( { v => 1, force => 1 }, '.' );
+        ( $write_tree_repo->write_tree )[0];
     };
 
     my $target_branch = _format_branch( $branch, $src );
 
     # no change, abort
     return
-      if eval {
-              $src->rev_parse({q=>1, verify => 1}, $target_branch );
-        }
-          and not $src->diff({ 'stat' => 1 }, $target_branch, $tree );
+        if
+        eval { $src->rev_parse( { q => 1, verify => 1 }, $target_branch ); }
+            and not $src->diff( { 'stat' => 1 }, $target_branch, $tree );
 
     my @parents = grep {
-        eval { $src->rev_parse({ 'q' => 1, 'verify'=>1}, $_ ) }
+        eval { $src->rev_parse( { 'q' => 1, 'verify' => 1 }, $_ ) }
     } $target_branch, 'HEAD';
 
     my @commit;
     {
-        # Git::Wrapper doesn't read from STDIN, which is 
+
+        # Git::Wrapper doesn't read from STDIN, which is
         # needed for commit-tree, so we have to everything
         # ourselves
         #
-        my ($fh, $filename) = File::Temp::tempfile();
+        my ( $fh, $filename ) = File::Temp::tempfile();
         $fh->autoflush(1);
         print $fh _format_message( $message, $self );
 
-        my @args=('git', 'commit-tree', $tree, map { ( -p => $_ ) } @parents);
-        push @args,'<'.$filename;
-        my $cmdline=join(' ',@args);
-        @commit=qx/$cmdline/;
+        my @args
+            = ( 'git', 'commit-tree', $tree, map { ( -p => $_ ) } @parents );
+        push @args, '<' . $filename;
+        my $cmdline = join( ' ', @args );
+        @commit = qx/$cmdline/;
 
         chomp(@commit);
 
@@ -131,7 +135,8 @@ sub _commit_build {
 }
 
 1;
-__END__
+
+# ABSTRACT: checkin build results on separate branch
 
 =for Pod::Coverage
     after_build
