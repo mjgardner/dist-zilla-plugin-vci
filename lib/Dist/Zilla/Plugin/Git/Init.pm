@@ -1,6 +1,8 @@
 use 5.010;
 use strict;
 use warnings;
+use utf8;
+use Modern::Perl;
 
 package Dist::Zilla::Plugin::Git::Init;
 # ABSTRACT: initialize git repository on dzil new

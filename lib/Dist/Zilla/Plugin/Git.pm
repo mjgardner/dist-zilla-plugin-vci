@@ -1,6 +1,8 @@
 use 5.008;
 use strict;
 use warnings;
+use utf8;
+use Modern::Perl;
 
 package Dist::Zilla::Plugin::Git;
 # ABSTRACT: update your git repository after release

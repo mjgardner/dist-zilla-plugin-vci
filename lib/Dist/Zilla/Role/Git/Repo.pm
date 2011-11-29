@@ -1,3 +1,6 @@
+use utf8;
+use Modern::Perl;
+
 package Dist::Zilla::Role::Git::Repo;
 
 # ABSTRACT: Provide repository information for Git plugins

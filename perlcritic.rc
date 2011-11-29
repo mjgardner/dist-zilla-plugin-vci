@@ -1,19 +1,31 @@
 severity = brutal
 verbose = 8
-exclude = Editor::RequireEmacsFileVariables Miscellanea::RequireRcsKeywords Modules::RequireExplicitInclusion Modules::RequireExplicitPackage Tics::ProhibitLongLines
+exclude = Editor::RequireEmacsFileVariables Miscellanea::RequireRcsKeywords Modules::RequireExplicitInclusion Modules::RequireExplicitPackage Tics::ProhibitLongLines Modules::RequirePerlVersion
 
 [Lax::RequireExplicitPackage::ExceptForPragmata]
-allowed_pragmata = perlversion strict warnings utf8
+allowed_pragmata = perlversion strict warnings utf8 Modern::Perl
+
+[Compatibility::PerlMinimumVersionAndWhy]
+above_version = 5.010
+
+[Compatibility::PodMinimumVersion]
+above_version = 5.010
 
 [CodeLayout::RequireTidyCode]
 perltidyrc = xt/author/perltidy.rc
 
 [Documentation::PodSpelling]
-stop_words = bugtracker Perldoc perldoc annonations
+stop_words = bugtracker Perldoc perldoc annonations Plugin plugin plugins PASSed VCI changelog DateTime GPG CLDR dzil config checkin untracked
 
 [Documentation::RequirePodSections]
-lib_sections = NAME | VERSION | DESCRIPTION | SUPPORT | AUTHOR | COPYRIGHT AND LICENSE
-script_sections = NAME | USAGE | DESCRIPTION | CONFIGURATION | SUPPORT | AUTHOR | COPYRIGHT AND LICENSE
+lib_sections = NAME | VERSION | DESCRIPTION | SUPPORT | AUTHORS | COPYRIGHT AND LICENSE
+script_sections = NAME | USAGE | DESCRIPTION | CONFIGURATION | SUPPORT | AUTHORS | COPYRIGHT AND LICENSE
 
 [Subroutines::ProhibitCallsToUndeclaredSubs]
-exempt_subs =
+exempt_subs =  Cwd::getcwd Moose::has Moose::with Moose::Role::has MooseX::Has::Sugar::around MooseX::Has::Sugar::lazy MooseX::Has::Sugar::ro MooseX::Has::Sugar::rw
+
+[TestingAndDebugging::RequireUseWarnings]
+equivalent_modules = Moose Moose::Role Modern::Perl
+
+[TestingAndDebugging::RequireUseStrict]
+equivalent_modules = Moose Moose::Role Modern::Perl
