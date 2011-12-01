@@ -13,6 +13,12 @@ Dist::Zilla::Plugin::VCI - Update your VCI-supported repository after release
 
 version 1.113221
 
+=head1 DESCRIPTION
+
+This set of plugins for L<Dist::Zilla|Dist::Zilla> will eventually let module
+authors do interesting things using version control systems supported by
+L<VCI|VCI>.
+
 =head1 SUPPORT
 
 =head2 Perldoc

@@ -20,7 +20,7 @@ sub before_release {
     my @output;
 
     # fetch current branch
-    my ($branch) = map { /^\*\s+(.+)/ ? $1 : () } $git->branch;
+    my ($branch) = map { /\A [*] \s+ (.+) /xms ? $1 : () } $git->branch;
 
     # check if some changes are staged for commit
     @output = $git->diff( { cached => 1, 'name-status' => 1 } );
