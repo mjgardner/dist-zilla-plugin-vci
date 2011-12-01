@@ -26,7 +26,7 @@ functions = :builtins
 exclude_functions = print say
 
 [Subroutines::ProhibitCallsToUndeclaredSubs]
-exempt_subs =  Cwd::getcwd Moose::has Moose::with Moose::Role::has MooseX::Has::Sugar::around MooseX::Has::Sugar::lazy MooseX::Has::Sugar::ro MooseX::Has::Sugar::rw
+exempt_subs =  Cwd::getcwd Moose::has Moose::with Moose::Role::has MooseX::Has::Sugar::around MooseX::Has::Sugar::lazy MooseX::Has::Sugar::lazy_build MooseX::Has::Sugar::required MooseX::Has::Sugar::ro MooseX::Has::Sugar::rw
 
 [TestingAndDebugging::RequireUseWarnings]
 equivalent_modules = Moose Moose::Role Modern::Perl

@@ -7,12 +7,12 @@ use utf8;
 use Git::Wrapper;
 use IPC::Open3;
 use File::chdir;
-use File::Spec::Functions qw/ rel2abs catfile /;
+use File::Spec::Functions qw(rel2abs catfile);
 use File::Temp;
 use Moose;
 use MooseX::Has::Sugar;
-use MooseX::Types::Moose qw{ Str };
-use Cwd qw(abs_path);
+use MooseX::Types::Moose 'Str';
+use Cwd 'abs_path';
 use String::Formatter (
     method_stringf => {
         -as => '_format_branch',
@@ -26,42 +26,42 @@ use String::Formatter (
                 sub { ( shift->_git->name_rev( '--name-only', 'HEAD' ) )[0] },
             h => sub { ( shift->_git->rev_parse( '--short', 'HEAD' ) )[0] },
             H => sub { ( shift->_git->rev_parse('HEAD') )[0] },
-            t => sub { shift->zilla->is_trial ? '-TRIAL' : '' },
+            t => sub { shift->zilla->is_trial ? '-TRIAL' : q{} },
             v => sub { shift->zilla->version },
-        }
-    }
+        },
+    },
 );
 
-with 'Dist::Zilla::Role::AfterBuild', 'Dist::Zilla::Role::AfterRelease';
-with 'Dist::Zilla::Role::Git::Repo';
+with qw(
+    Dist::Zilla::Role::AfterBuild
+    Dist::Zilla::Role::AfterRelease
+    Dist::Zilla::Role::Git::Repo
+);
 
 # -- attributes
 
-has branch => ( ro, isa => Str, default => 'build/%b', required => 1 );
-has release_branch => ( ro, isa => Str, required => 0 );
-has message => ( ro,
-    isa      => Str,
-    default  => 'Build results of %h (on %b)',
-    required => 1
+has branch => ( ro, required, isa => Str, default => 'build/%b' );
+has release_branch => ( ro, isa => Str );
+has message => ( ro, required,
+    isa     => Str,
+    default => 'Build results of %h (on %b)',
 );
 has release_message =>
-    ( ro, isa => Str, lazy => 1, builder => '_build_release_message' );
+    ( ro, lazy, isa => Str, default => sub { shift->message } );
 has build_root => (rw);
 has _git => ( rw, weak_ref => 1 );
-
-# -- attribute builders
-
-sub _build_release_message { return shift->message; }
 
 # -- role implementation
 
 sub after_build {
     my ( $self, $args ) = @_;
 
-    # because the build_root mysteriously change at
-    # the 'after_release' stage
-    $self->build_root( $args->{build_root} );
-
+    {
+        ## no critic (ValuesAndExpressions::ProhibitAccessOfPrivateData)
+        # because the build_root mysteriously change at
+        # the 'after_release' stage
+        $self->build_root( $args->{build_root} );
+    }
     $self->_commit_build( $args, $self->branch, $self->message );
     return;
 }
@@ -76,8 +76,7 @@ sub after_release {
 
 sub _commit_build {
     my ( $self, undef, $branch, $message ) = @_;
-
-    return unless $branch;
+    return if not $branch;
 
     my $tmp_dir = File::Temp->newdir( CLEANUP => 1 );
     my $src = Git::Wrapper->new( $self->repo_root );
@@ -88,15 +87,15 @@ sub _commit_build {
     my $tree = do {
 
         # don't overwrite the user's index
-        local $ENV{GIT_INDEX_FILE} = catfile( $tmp_dir, "temp_git_index" );
+        local $ENV{GIT_INDEX_FILE} = catfile( $tmp_dir, 'temp_git_index' );
         local $ENV{GIT_DIR}        = catfile( $CWD,     '.git' );
         local $ENV{GIT_WORK_TREE}  = $dir;
 
-        local $CWD = $dir;
+        local $CWD = $dir;    ## no critic (Variables::ProhibitLocalVars)
 
         my $write_tree_repo = Git::Wrapper->new( $self->repo_root );
 
-        $write_tree_repo->add( { v => 1, force => 1 }, '.' );
+        $write_tree_repo->add( { v => 1, force => 1 }, q{.} );
         ( $write_tree_repo->write_tree )[0];
     };
 
@@ -121,15 +120,15 @@ sub _commit_build {
         #
         my ( $fh, $filename ) = File::Temp::tempfile();
         $fh->autoflush(1);
-        print $fh _format_message( $message, $self );
+        print {$fh} _format_message( $message, $self );
 
         my @args
             = ( 'git', 'commit-tree', $tree, map { ( -p => $_ ) } @parents );
         push @args, '<' . $filename;
-        my $cmdline = join( ' ', @args );
+        my $cmdline = join q{ }, @args;
         @commit = qx/$cmdline/;
 
-        chomp(@commit);
+        chomp @commit;
 
     }
 
