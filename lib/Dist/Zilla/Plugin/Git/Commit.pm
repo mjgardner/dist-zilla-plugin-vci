@@ -173,7 +173,7 @@ The list of changes in the just-released version (read from C<changelog>).
 =item C<%{dd-MMM-yyyy}d>
 
 The current date.  You can use any CLDR format supported by
-L<DateTime>.  A bare C<%d> means C<%{dd-MMM-yyyy}d>.
+L<DateTime|DateTime>.  A bare C<%d> means C<%{dd-MMM-yyyy}d>.
 
 =item C<%n>
 

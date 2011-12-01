@@ -72,9 +72,11 @@ In your F<dist.ini>:
 
 =head1 DESCRIPTION
 
-This does the L<Dist::Zilla::Role::VersionProvider> role.  It finds the last
-version number from your git tags, increments it using L<Version::Next>, and
-uses the result as the C<version> parameter for your distribution.
+This does the
+L<Dist::Zilla::Role::VersionProvider|Dist::Zilla::Role::VersionProvider> role.
+It finds the last version number from your git tags, increments it using
+L<Version::Next|Version::Next>, and uses the result as the C<version> parameter
+for your distribution.
 
 The plugin accepts the following options:
 
@@ -89,7 +91,8 @@ is used as the first version for the distribution.  It defaults to "0.001".
 
 C<version_regexp> - regular expression that matches a tag containing
 a version.  It must capture the version into $1.  Defaults to ^v(.+)$
-which matches the default C<tag_format> from L<Dist::Zilla::Plugin::Git::Tag>.
+which matches the default C<tag_format> from
+L<Dist::Zilla::Plugin::Git::Tag|Dist::Zilla::Plugin::Git::Tag>.
 If you change C<tag_format>, you B<must> set a corresponsing C<version_regexp>.
 
 =back
@@ -99,6 +102,3 @@ This is useful if you need to bump to a specific version.  For example, if
 the last tag is 0.005 and you want to jump to 1.000 you can set V = 1.000.
 
   $ V=1.000 dzil release
-
-=cut
-

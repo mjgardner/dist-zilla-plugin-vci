@@ -156,15 +156,15 @@ In your F<dist.ini>:
 Once the build is done, this plugin will commit the results of the
 build to a branch that is completely separate from your regular code
 branches (i.e. with a different root commit).  This potentially makes
-your repository more useful to those who may not have L<Dist::Zilla>
+your repository more useful to those who may not have L<Dist::Zilla|Dist::Zilla>
 and all of its dependencies installed.
 
 The plugin accepts the following options:
 
 =over 4
 
-=item * branch - L<String::Formatter> string for where to commit the
-build contents.
+=item * branch - L<String::Formatter|String::Formatter> string for where to
+commit the build contents.
 
 A single formatting code (C<%b>) is defined for this attribute and will be
 substituted with the name of the current branch in your git repository.
@@ -172,14 +172,14 @@ substituted with the name of the current branch in your git repository.
 Defaults to C<build/%b>, but if set explicitly to an empty string
 causes no build contents checkin to be made.
 
-=item * release_branch - L<String::Formatter> string for where to commit the
-build contents
+=item * release_branch - L<String::Formatter|String::Formatter> string for where
+to commit the build contents
 
 Same as C<branch>, but commit the build content only after a release. No
 default, meaning no release branch.
 
-=item * message - L<String::Formatter> string for what commit message
-to use when committing the results of the build.
+=item * message - L<String::Formatter|String::Formatter> string for what commit
+message to use when committing the results of the build.
 
 This option supports five formatting codes:
 
@@ -197,11 +197,8 @@ This option supports five formatting codes:
 
 =back
 
-=item * release_message - L<String::Formatter> string for what
+=item * release_message - L<String::Formatter|String::Formatter> string for what
 commit message to use when committing the results of the release.
 Defaults to the same as C<message>.
 
 =back
-
-=cut
-
