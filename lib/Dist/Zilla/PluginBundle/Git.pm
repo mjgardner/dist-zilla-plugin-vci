@@ -24,17 +24,12 @@ sub mvp_multivalue_args { return keys %multi }
 sub bundle_config {
     my ( $self, $section ) = @_;
 
-    #my $class = ( ref $self ) || $self;
-    my $arg = $section->{payload};
-
+    my %arg = %{ $section->payload };
     my @config;
-
     for my $name (@names) {
         my $class = "Dist::Zilla::Plugin::Git::$name";
-        my %payload;
-        foreach my $k ( keys %$arg ) {
-            $payload{$k} = $arg->{$k} if $class->can($k);
-        }
+        my %payload
+            = map { $_ => $arg{$_} } grep { $class->can($_) } keys %arg;
         push @config, [ "$section->{name}/$name" => $class => \%payload ];
     }
 
