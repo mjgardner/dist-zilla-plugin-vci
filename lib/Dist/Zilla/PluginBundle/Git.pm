@@ -5,7 +5,7 @@ use utf8;
 
 # VERSION
 use Moose;
-use Class::MOP;
+use Class::Load 'load_class';
 
 with 'Dist::Zilla::Role::PluginBundle';
 
@@ -15,7 +15,7 @@ my @names = qw{ Check Commit Tag Push };
 my %multi;
 for my $name (@names) {
     my $class = "Dist::Zilla::Plugin::Git::$name";
-    Class::MOP::load_class($class);
+    load_class($class);
     @multi{ $class->mvp_multivalue_args } = ();
 }
 
