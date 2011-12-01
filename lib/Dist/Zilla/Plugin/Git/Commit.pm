@@ -4,11 +4,16 @@ use Modern::Perl;
 use utf8;
 
 # VERSION
-use File::Temp qw{ tempfile };
+use autodie;
+use File::Temp 'tempfile';
 use Git::Wrapper;
+use Regexp::DefaultFlags;
+## no critic (RegularExpressions::RequireDotMatchAnything)
+## no critic (RegularExpressions::RequireExtendedFormatting)
+## no critic (RegularExpressions::RequireLineBoundaryMatching)
 use Moose;
 use MooseX::Has::Sugar;
-use MooseX::Types::Moose qw{ Str };
+use MooseX::Types::Moose qw(ArrayRef Str);
 use Path::Class::Dir ();
 use Cwd;
 
@@ -26,21 +31,23 @@ use String::Formatter method_stringf => {
         t => sub {
             $_[0]->zilla->is_trial
                 ? ( defined $_[1] ? $_[1] : '-TRIAL' )
-                : '';
+                : q{};
         },
         v => sub { $_[0]->zilla->version },
     },
 };
 
-with 'Dist::Zilla::Role::AfterRelease';
-with 'Dist::Zilla::Role::Git::DirtyFiles';
-with 'Dist::Zilla::Role::Git::Repo';
+with qw(
+    Dist::Zilla::Role::AfterRelease
+    Dist::Zilla::Role::Git::DirtyFiles
+    Dist::Zilla::Role::Git::Repo
+);
 
 # -- attributes
 
 has commit_msg => ( ro, isa => Str, default => 'v%v%n%n%c' );
 has time_zone  => ( ro, isa => Str, default => 'local' );
-has add_files_in => ( ro, isa => 'ArrayRef[Str]', default => sub { [] } );
+has add_files_in => ( ro, isa => ArrayRef [Str], default => sub { [] } );
 
 # -- public methods
 
@@ -65,7 +72,7 @@ sub after_release {
         foreach my $f (@untracked_files) {
             foreach my $path ( @{ $self->add_files_in } ) {
                 if ( Path::Class::Dir->new($path)->subsumes($f) ) {
-                    push( @output, $f );
+                    push @output, $f;
                     last;
                 }
             }
@@ -73,16 +80,16 @@ sub after_release {
     }
 
     # if nothing to commit, we're done!
-    return unless @output;
+    return if not @output;
 
     # write commit message in a temp file
     my ( $fh, $filename ) = tempfile( getcwd . '/DZP-git.XXXX', UNLINK => 0 );
-    print $fh $self->get_commit_message;
+    print {$fh} $self->get_commit_message;
     close $fh;
 
     # commit the files in git
     $git->add(@output);
-    $self->log_debug($_) for $git->commit( { file => $filename } );
+    for ( $git->commit( { file => $filename } ) ) { $self->log_debug($_) }
     $self->log("Committed @output");
     return;
 }
@@ -90,6 +97,7 @@ sub after_release {
 sub get_commit_message {
     my $self = shift;
 
+    ## no critic (Subroutines::ProhibitCallsToUndeclaredSubs)
     return _format_string( $self->commit_msg, $self );
 }    # end get_commit_message
 
@@ -101,16 +109,20 @@ sub _get_changes {
     # parse changelog to find commit message
     my $changelog
         = Dist::Zilla::File::OnDisk->new( { name => $self->changelog } );
+
+    # from newver to un-indented
     my $newver = $self->zilla->version;
-    my @content
-        = grep { /^$newver(?:\s+|$)/ ... /^\S/ }  # from newver to un-indented
-        split /\n/, $changelog->content;
+    my @content = grep { /\A $newver (?: \s+ | $)/ ... /\A \S / } split /\n/,
+        $changelog->content;
+
     shift @content;    # drop the version line
                        # drop unindented last line and trailing blank lines
-    pop @content while ( @content && $content[-1] =~ /^(?:\S|\s*$)/ );
+    while ( @content && $content[-1] =~ /\A (?: \S | \s* $)/ ) {
+        pop @content;
+    }
 
     # return commit message
-    return join( "\n", @content, '' );    # add a final \n
+    return join "\n", @content, q{};    # add a final \n
 }    # end _get_changes
 
 1;

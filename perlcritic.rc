@@ -15,11 +15,15 @@ above_version = 5.010
 perltidyrc = xt/author/perltidy.rc
 
 [Documentation::PodSpelling]
-stop_words = bugtracker Perldoc perldoc annonations Plugin plugin plugins PASSed VCI changelog DateTime GPG CLDR dzil config checkin untracked
+stop_words = bugtracker Perldoc perldoc annonations Plugin plugin plugins PASSed VCI changelog DateTime GPG CLDR dzil config checkin untracked timestamp BeforeRelease AfterRelease
 
 [Documentation::RequirePodSections]
 lib_sections = NAME | VERSION | DESCRIPTION | SUPPORT | AUTHORS | COPYRIGHT AND LICENSE
 script_sections = NAME | USAGE | DESCRIPTION | CONFIGURATION | SUPPORT | AUTHORS | COPYRIGHT AND LICENSE
+
+[InputOutput::RequireCheckedSyscalls]
+functions = :builtins
+exclude_functions = print say
 
 [Subroutines::ProhibitCallsToUndeclaredSubs]
 exempt_subs =  Cwd::getcwd Moose::has Moose::with Moose::Role::has MooseX::Has::Sugar::around MooseX::Has::Sugar::lazy MooseX::Has::Sugar::ro MooseX::Has::Sugar::rw
