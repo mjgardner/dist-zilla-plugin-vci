@@ -41,7 +41,7 @@ has config_entries => (
     default => sub { [] },
 );
 
-sub mvp_multivalue_args {qw(config_entries remotes)}
+sub mvp_multivalue_args { return qw(config_entries remotes) }
 sub mvp_aliases { return { config => 'config_entries', remote => 'remotes' } }
 
 sub after_mint {
@@ -68,6 +68,7 @@ sub after_mint {
         $self->log_debug("Adding remote $remote as $url");
         $git->remote( add => $remote, $url );
     }
+    return;
 }
 
 1;

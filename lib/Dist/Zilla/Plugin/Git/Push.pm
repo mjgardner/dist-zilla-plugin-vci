@@ -12,7 +12,7 @@ use MooseX::Types::Moose qw{ ArrayRef Str };
 with 'Dist::Zilla::Role::AfterRelease';
 with 'Dist::Zilla::Role::Git::Repo';
 
-sub mvp_multivalue_args {qw(push_to)}
+sub mvp_multivalue_args { return 'push_to' }
 
 # -- attributes
 
@@ -34,6 +34,7 @@ sub after_release {
         $self->log_debug($_) for $git->push(@remote);
         $self->log_debug($_) for $git->push( { tags => 1 }, $remote[0] );
     }
+    return;
 }
 
 1;
@@ -63,7 +64,7 @@ The plugin accepts the following options:
 
 =over 4
 
-=item * 
+=item *
 
 push_to - the name of the a remote to push to. The default is F<origin>.
 This may be specified multiple times to push to multiple repositories.

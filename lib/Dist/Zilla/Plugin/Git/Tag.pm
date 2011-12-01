@@ -57,6 +57,7 @@ sub before_release {
     my $tag = $self->tag;
     $self->log_fatal("tag $tag already exists")
         if $git->tag( '-l', $tag );
+    return;
 }
 
 sub after_release {
@@ -76,6 +77,7 @@ sub after_release {
     my $tag = $self->tag;
     $git->tag( @opts, $tag, @branch );
     $self->log("Tagged $tag");
+    return;
 }
 
 1;
@@ -145,7 +147,7 @@ the following codes at your convenience:
 =item C<%{dd-MMM-yyyy}d>
 
 The current date.  You can use any CLDR format supported by
-L<DateTime|DateTime>. A bare C<%d> means C<%{dd-MMM-yyyy}d>.
+L<DateTime>. A bare C<%d> means C<%{dd-MMM-yyyy}d>.
 
 =item C<%n>
 

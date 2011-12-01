@@ -19,7 +19,7 @@ for my $name (@names) {
     @multi{ $class->mvp_multivalue_args } = ();
 }
 
-sub mvp_multivalue_args { keys %multi; }
+sub mvp_multivalue_args { return keys %multi }
 
 sub bundle_config {
     my ( $self, $section ) = @_;

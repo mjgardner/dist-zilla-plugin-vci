@@ -49,6 +49,7 @@ sub before_release {
     }
 
     $self->log("branch $branch is in a clean state");
+    return;
 }
 
 1;

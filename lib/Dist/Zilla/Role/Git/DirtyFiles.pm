@@ -29,7 +29,7 @@ around mvp_multivalue_args => sub {
 
 # -- builders & initializers
 
-sub _build_allow_dirty { [ 'dist.ini', shift->changelog ] }
+sub _build_allow_dirty { return [ 'dist.ini', shift->changelog ] }
 
 sub list_dirty_files {
     my ( $self, $git, $listAllowed ) = @_;

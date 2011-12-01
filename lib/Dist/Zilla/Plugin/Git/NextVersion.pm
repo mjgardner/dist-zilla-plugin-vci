@@ -50,7 +50,7 @@ sub provide_version {
     my $new_ver = Version::Next::next_version($last_ver);
     $self->log("Bumping version from $last_ver to $new_ver");
 
-    $self->zilla->version("$new_ver");
+    return $self->zilla->version("$new_ver");
 }
 
 __PACKAGE__->meta->make_immutable;

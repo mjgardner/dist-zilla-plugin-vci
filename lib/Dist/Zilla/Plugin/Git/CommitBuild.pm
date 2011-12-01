@@ -63,6 +63,7 @@ sub after_build {
     $self->build_root( $args->{build_root} );
 
     $self->_commit_build( $args, $self->branch, $self->message );
+    return;
 }
 
 sub after_release {
@@ -70,6 +71,7 @@ sub after_release {
 
     $self->_commit_build( $args, $self->release_branch,
         $self->release_message );
+    return;
 }
 
 sub _commit_build {
@@ -132,6 +134,7 @@ sub _commit_build {
     }
 
     $src->update_ref( 'refs/heads/' . $target_branch, $commit[0] );
+    return;
 }
 
 1;

@@ -44,7 +44,7 @@ has add_files_in => ( ro, isa => 'ArrayRef[Str]', default => sub { [] } );
 
 # -- public methods
 
-sub mvp_multivalue_args {qw( add_files_in )}
+sub mvp_multivalue_args { return 'add_files_in' }
 
 sub after_release {
     my $self = shift;
@@ -84,6 +84,7 @@ sub after_release {
     $git->add(@output);
     $self->log_debug($_) for $git->commit( { file => $filename } );
     $self->log("Committed @output");
+    return;
 }
 
 sub get_commit_message {
