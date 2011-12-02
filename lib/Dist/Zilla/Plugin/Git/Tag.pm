@@ -5,9 +5,7 @@ use utf8;
 
 # VERSION
 use Git::Wrapper;
-use Moose;
-use MooseX::Has::Sugar;
-use MooseX::Types::Moose qw{ Str };
+sub _format_tag;
 use String::Formatter method_stringf => {
     -as   => '_format_tag',
     codes => {
@@ -21,30 +19,38 @@ use String::Formatter method_stringf => {
         t => sub {
             $_[0]->zilla->is_trial
                 ? ( defined $_[1] ? $_[1] : '-TRIAL' )
-                : '';
+                : q{};
         },
         v => sub { $_[0]->zilla->version },
     },
 };
 
-with 'Dist::Zilla::Role::BeforeRelease';
-with 'Dist::Zilla::Role::AfterRelease';
-with 'Dist::Zilla::Role::Git::Repo';
+use Moose;
+use MooseX::Has::Sugar;
+use MooseX::Types::Moose qw(Bool Str);
+with qw(
+    Dist::Zilla::Role::BeforeRelease
+    Dist::Zilla::Role::AfterRelease
+    Dist::Zilla::Role::Git::Repo
+);
 
 # -- attributes
 
-has tag_format  => ( ro, isa => Str, default   => 'v%v' );
-has tag_message => ( ro, isa => Str, default   => 'v%v' );
-has time_zone   => ( ro, isa => Str, default   => 'local' );
-has branch      => ( ro, isa => Str, predicate => 'has_branch' );
-has signed => ( ro, isa => 'Bool', default => 0 );
-
-has tag => ( ro, isa => Str, lazy_build => 1, );
-
-sub _build_tag {
-    my $self = shift;
-    return _format_tag( $self->tag_format, $self );
+my %attr = (
+    tag_format  => 'v%v',
+    tag_message => 'v%v',
+    time_zone   => 'local',
+);
+while ( my ( $name, $default ) = each %attr ) {
+    has $name => ( ro, isa => Str, default => $default );
 }
+
+has signed => ( ro, isa => Bool, default   => 0 );
+has branch => ( ro, isa => Str,  predicate => 'has_branch' );
+has tag => ( ro, lazy,
+    isa     => Str,
+    default => sub { _format_tag( $_[0]->tag_format, $_[0] ) },
+);
 
 # -- role implementation
 
@@ -55,8 +61,9 @@ sub before_release {
 
     # Make sure a tag with the new version doesn't exist yet:
     my $tag = $self->tag;
-    $self->log_fatal("tag $tag already exists")
-        if $git->tag( '-l', $tag );
+    if ( $git->tag( -l => $tag ) ) {
+        $self->log_fatal("tag $tag already exists");
+    }
     return;
 }
 
@@ -64,12 +71,14 @@ sub after_release {
     my $self = shift;
     my $git  = Git::Wrapper->new( $self->repo_root );
 
-    my @opts;
-    push @opts, ( '-m' => _format_tag( $self->tag_message, $self ) )
-        if $self->tag_message
-    ;    # Make an annotated tag if tag_message, lightweight tag otherwise:
-    push @opts, '-s'
-        if $self->signed;    # make a GPG-signed tag
+    # Make an annotated tag if tag_message, lightweight tag otherwise
+    # make a GPG-signed tag
+    my @opts = (
+        $self->tag_message
+        ? ( -m => _format_tag( $self->tag_message, $self ) )
+        : (),
+        $self->signed ? '-s' : (),
+    );
 
     my @branch = $self->has_branch ? ( $self->branch ) : ();
 
@@ -147,7 +156,7 @@ the following codes at your convenience:
 =item C<%{dd-MMM-yyyy}d>
 
 The current date.  You can use any CLDR format supported by
-L<DateTime>. A bare C<%d> means C<%{dd-MMM-yyyy}d>.
+L<DateTime|DateTime>. A bare C<%d> means C<%{dd-MMM-yyyy}d>.
 
 =item C<%n>
 
