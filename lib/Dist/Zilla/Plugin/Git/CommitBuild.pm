@@ -109,7 +109,8 @@ sub _commit_build {
             and not $src->diff( { 'stat' => 1 }, $target_branch, $tree );
 
     my @parents = grep {
-        eval { $src->rev_parse( { 'q' => 1, 'verify' => 1 }, $_ ) }
+        ## no critic (ErrorHandling::RequireCheckingReturnValueOfEval)
+        eval { $src->rev_parse( { q => 1, verify => 1 }, $_ ) }
     } $target_branch, 'HEAD';
 
     my @commit;
