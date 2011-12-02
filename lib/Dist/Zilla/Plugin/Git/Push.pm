@@ -7,32 +7,27 @@ use utf8;
 use Git::Wrapper;
 use Moose;
 use MooseX::Has::Sugar;
-use MooseX::Types::Moose qw{ ArrayRef Str };
+use MooseX::Types::Moose qw(ArrayRef Str);
 
-with 'Dist::Zilla::Role::AfterRelease';
-with 'Dist::Zilla::Role::Git::Repo';
+with qw(Dist::Zilla::Role::AfterRelease Dist::Zilla::Role::Git::Repo);
 
 sub mvp_multivalue_args { return 'push_to' }
 
 # -- attributes
 
-has push_to => (
-    is      => 'ro',
-    isa     => 'ArrayRef[Str]',
-    lazy    => 1,
-    default => sub { [qw(origin)] },
-);
+has push_to =>
+    ( ro, lazy, isa => ArrayRef [Str], default => sub { ['origin'] } );
 
 sub after_release {
     my $self = shift;
     my $git  = Git::Wrapper->new( $self->repo_root );
 
     # push everything on remote branch
-    for my $remote ( @{ $self->push_to } ) {
-        $self->log("pushing to $remote");
-        my @remote = split( /\s+/, $remote );
-        $self->log_debug($_) for $git->push(@remote);
-        $self->log_debug($_) for $git->push( { tags => 1 }, $remote[0] );
+    for ( @{ $self->push_to } ) {
+        $self->log("pushing to $_");
+        my @remote = split;
+        $self->log_debug( map { $git->push( @{$_} ) }
+                ( \@remote, [ { tags => 1 }, $remote[0] ] ) );
     }
     return;
 }
