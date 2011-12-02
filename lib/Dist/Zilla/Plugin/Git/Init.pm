@@ -5,14 +5,11 @@ use utf8;
 
 # VERSION
 
-our %transform = (
-    lc => sub { lc shift },
-    uc => sub { uc shift },
-    '' => sub {shift},
+our %transform = (    ## no critic (Variables::ProhibitPackageVars)
+    lc  => sub { lc shift },
+    uc  => sub { uc shift },
+    q{} => sub {shift},
 );
-
-use Moose;
-use Git::Wrapper;
 use String::Formatter method_stringf => {
     -as   => '_format_string',
     codes => {
@@ -21,6 +18,8 @@ use String::Formatter method_stringf => {
     },
 };
 
+use Git::Wrapper;
+use Moose;
 with 'Dist::Zilla::Role::AfterMint';
 
 has commit_message => (
@@ -45,26 +44,27 @@ sub mvp_multivalue_args { return qw(config_entries remotes) }
 sub mvp_aliases { return { config => 'config_entries', remote => 'remotes' } }
 
 sub after_mint {
-    my $self   = shift;
-    my ($opts) = @_;
-    my $git    = Git::Wrapper->new( $opts->{mint_root} );
-    $self->log(
-        "Initializing a new git repository in " . $opts->{mint_root} );
+    my $self      = shift;
+    my $mint_root = shift->{mint_root};
+
+    my $git = Git::Wrapper->new($mint_root);
+    $self->log("Initializing a new git repository in $mint_root");
     $git->init;
 
-    foreach my $configSpec ( @{ $self->config_entries } ) {
-        my ( $option, $value ) = split ' ',
-            _format_string( $configSpec, $self ), 2;
+    ## no critic (Subroutines::ProhibitCallsToUndeclaredSubs)
+    foreach my $config_spec ( @{ $self->config_entries } ) {
+        my ( $option, $value ) = split q{ },
+            _format_string( $config_spec, $self ), 2;
         $self->log_debug("Configuring $option $value");
         $git->config( $option, $value );
     }
 
-    $git->add( $opts->{mint_root} );
+    $git->add($mint_root);
     $git->commit(
         { message => _format_string( $self->commit_message, $self ) } );
-    foreach my $remoteSpec ( @{ $self->remotes } ) {
-        my ( $remote, $url ) = split ' ',
-            _format_string( $remoteSpec, $self ), 2;
+    foreach my $remote_spec ( @{ $self->remotes } ) {
+        my ( $remote, $url ) = split q{ },
+            _format_string( $remote_spec, $self ), 2;
         $self->log_debug("Adding remote $remote as $url");
         $git->remote( add => $remote, $url );
     }
