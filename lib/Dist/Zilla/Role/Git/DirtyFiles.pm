@@ -4,21 +4,19 @@ use Modern::Perl;
 use utf8;
 
 # VERSION
+use List::Util 'first';
 use Moose::Role;
 use Moose::Autobox;
 use MooseX::Has::Sugar;
 use MooseX::Types::Moose qw{ ArrayRef Str };
 
-use List::Util 'first';
-
 # -- attributes
 
-has allow_dirty => (
-    ro, lazy,
-    isa => ArrayRef [Str],
-    builder => '_build_allow_dirty',
-);
 has changelog => ( ro, isa => Str, default => 'Changes' );
+has allow_dirty => ( ro, lazy,
+    isa => ArrayRef [Str],
+    default => sub { [ 'dist.ini', shift->changelog ] },
+);
 
 around mvp_multivalue_args => sub {
     my ( $orig, $self ) = @_;
@@ -27,23 +25,14 @@ around mvp_multivalue_args => sub {
     return ( @start, 'allow_dirty' );
 };
 
-# -- builders & initializers
-
-sub _build_allow_dirty { return [ 'dist.ini', shift->changelog ] }
-
 sub list_dirty_files {
-    my ( $self, $git, $listAllowed ) = @_;
+    my ( $self, $git, $list_allowed ) = @_;
 
-    my @allowed = map {qr/${_}$/} $self->allow_dirty->flatten;
+    my @allowed = map {qr/ ${_} \z/xms} $self->allow_dirty->flatten;
 
     return grep {
         my $file = $_;
-        if ( first { $file =~ $_ } @allowed ) {
-            $listAllowed;
-        }
-        else {
-            !$listAllowed;
-        }
+        ( first { $file =~ $_ } @allowed ) ? $list_allowed : !$list_allowed;
     } $git->ls_files( { modified => 1, deleted => 1 } );
 }    # end list_dirty_files
 
@@ -60,11 +49,12 @@ no MooseX::Has::Sugar;
 
 This role is used within the git plugin to work with files that are
 dirty in the local git checkout.
+
 =attr allow_dirty
 
 A list of files that are allowed to be dirty in the git checkout.
 Defaults to C<dist.ini> and the changelog (as defined per the
-C<changelog> attribute.
+C<changelog> attribute.)
 
 =attr changelog
 
@@ -72,10 +62,10 @@ The name of the changelog. Defaults to C<Changes>.
 
 =method list_dirty_files
 
-  my @dirty = $plugin->list_dirty_files($git, $listAllowed);
+  my @dirty = $plugin->list_dirty_files($git, $list_allowed);
 
 This returns a list of the modified or deleted files in C<$git>,
-filtered against the C<allow_dirty> attribute.  If C<$listAllowed> is
+filtered against the C<allow_dirty> attribute.  If C<$list_allowed> is
 true, only allowed files are listed.  If it's false, only files that
 are not allowed to be dirty are listed.
 
