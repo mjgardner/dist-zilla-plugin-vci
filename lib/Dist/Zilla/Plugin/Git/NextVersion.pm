@@ -27,7 +27,7 @@ while ( my ( $name, $default ) = each %attr ) {
 # -- role implementation
 
 sub provide_version {
-    my ($self) = @ARG;
+    my $self = shift;
 
     # override (or maybe needed to initialize)
     return $ENV{V} if exists $ENV{V};
@@ -49,6 +49,7 @@ sub provide_version {
     my ($last_ver)
         = reverse sort { version->parse($a) <=> version->parse($b) }
         grep {
+        ## no critic (ErrorHandling::RequireCheckingReturnValueOfEval)
         eval { version->parse($ARG) }
         } @tags;
     if ( !defined $last_ver ) {
