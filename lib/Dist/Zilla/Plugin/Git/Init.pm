@@ -20,25 +20,13 @@ use String::Formatter method_stringf => {
 
 use Git::Wrapper;
 use Moose;
+use MooseX::Has::Sugar;
+use MooseX::Types::Moose qw(ArrayRef Str);
 with 'Dist::Zilla::Role::AfterMint';
 
-has commit_message => (
-    is      => 'ro',
-    isa     => 'Str',
-    default => 'initial commit',
-);
-
-has remotes => (
-    is      => 'ro',
-    isa     => 'ArrayRef[Str]',
-    default => sub { [] },
-);
-
-has config_entries => (
-    is      => 'ro',
-    isa     => 'ArrayRef[Str]',
-    default => sub { [] },
-);
+has commit_message => ( ro, isa => Str, default => 'initial commit' );
+has [qw(remotes config_entries)] =>
+    ( ro, isa => ArrayRef [Str], default => sub { [] } );
 
 sub mvp_multivalue_args { return qw(config_entries remotes) }
 sub mvp_aliases { return { config => 'config_entries', remote => 'remotes' } }
