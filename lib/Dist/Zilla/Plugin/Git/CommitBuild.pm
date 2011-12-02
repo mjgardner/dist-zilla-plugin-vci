@@ -9,6 +9,7 @@ use IPC::Open3;
 use File::chdir;
 use File::Spec::Functions qw(rel2abs catfile);
 use File::Temp;
+use IPC::System::Simple 'capture';
 use Moose;
 use MooseX::Has::Sugar;
 use MooseX::Types::Moose 'Str';
@@ -122,14 +123,9 @@ sub _commit_build {
         $fh->autoflush(1);
         print {$fh} _format_message( $message, $self );
 
-        my @args
-            = ( 'git', 'commit-tree', $tree, map { ( -p => $_ ) } @parents );
-        push @args, '<' . $filename;
-        my $cmdline = join q{ }, @args;
-        @commit = qx/$cmdline/;
-
+        @commit = capture( join q{ }, 'git', 'commit-tree', $tree,
+            ( map { ( -p => $_ ) } @parents ), "<$filename" );
         chomp @commit;
-
     }
 
     $src->update_ref( 'refs/heads/' . $target_branch, $commit[0] );
