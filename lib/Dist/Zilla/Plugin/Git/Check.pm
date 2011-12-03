@@ -7,9 +7,11 @@ use utf8;
 use Git::Wrapper;
 use Moose;
 
-with 'Dist::Zilla::Role::BeforeRelease';
-with 'Dist::Zilla::Role::Git::DirtyFiles';
-with 'Dist::Zilla::Role::Git::Repo';
+with qw(
+    Dist::Zilla::Role::BeforeRelease
+    Dist::Zilla::Role::Git::DirtyFiles
+    Dist::Zilla::Role::Git::Repo
+);
 
 # -- public methods
 

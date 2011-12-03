@@ -8,7 +8,7 @@ use List::Util 'first';
 use Moose::Role;
 use Moose::Autobox;
 use MooseX::Has::Sugar;
-use MooseX::Types::Moose qw{ ArrayRef Str };
+use MooseX::Types::Moose qw(ArrayRef Str);
 
 # -- attributes
 

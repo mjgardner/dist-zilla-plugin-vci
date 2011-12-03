@@ -18,7 +18,7 @@ following plugins are provided in this distribution:
 
 =over 4
 
-=item * L<Dist::Zilla::Plugin::Git::Check|<Dist::Zilla::Plugin::Git::Check>
+=item * L<Dist::Zilla::Plugin::Git::Check|Dist::Zilla::Plugin::Git::Check>
 
 =item * L<Dist::Zilla::Plugin::Git::Commit|Dist::Zilla::Plugin::Git::Commit>
 
